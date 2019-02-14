@@ -19,6 +19,7 @@
                     class="form-control-file"
                     required
             />
+
             <button type="submit" class = "btn btn-primary">Submit</button>
 
         </form>
@@ -31,7 +32,7 @@
                     @click = "setTooltipPosition"
                     ref = "image"
             >
-            <div class = "image-tooltip" v-if = "form.tooltip">
+            <div class = "image-tooltip" v-if = "form.tooltip" :style = "tooltipPosition">
                 {{form.tooltip}}
             </div>
         </div>
@@ -39,6 +40,7 @@
 </template>
 
 <script>
+    /* eslint-disable */
     export default {
         name: "image-load",
         data() {
@@ -46,18 +48,18 @@
                 form: {
                     tooltip: '',
                     imageData: '',
+                    imgName: '',
                     tooltipX: 0,
                     tooltipY: 0
                 },
-                images: [],
+
                 title: 'Upload image'
             }
         },
         methods: {
             submitForm() {
                 if(this.form.tooltipX && this.form.tooltipY) {
-                    this.images.push(this.form);
-                    localStorage.setItem('images', JSON.stringify(this.images));
+                    this.$emit('getImages', Object.assign({}, this.form));
                     this.form.tooltip = '';
                     this.form.imageData = '';
                     this.form.tooltipX = 0;
@@ -71,6 +73,7 @@
                 if (input.files && input.files[0]) {
                     let reader = new FileReader();
                     reader.onload = (e) => {
+                        this.form.imgName = input.files[0].name;
                         this.form.imageData = e.target.result;
                     }
                     reader.readAsDataURL(input.files[0]);
@@ -78,16 +81,20 @@
             },
             setTooltipPosition(event) {
                 let imageWidth = this.$refs.image.clientWidth;
-                console.log(imageWidth)
-                this.form.tooltipX = event.offsetX;
-                this.form.tooltipY = event.offsetY;
-                console.log(this.form)
+                let imageHeight = this.$refs.image.clientHeight;
+                this.form.tooltipX = event.offsetX/(imageWidth/100);
+                this.form.tooltipY = event.offsetY/(imageHeight/100);
             }
         },
-        mounted() {
-            this.images = JSON.parse(localStorage.getItem('images'));
-
+        computed: {
+            tooltipPosition() {
+                return {
+                    left: this.form.tooltipX + '%',
+                    top: this.form.tooltipY + '%',
+                }
+            }
         }
+
     }
 </script>
 
@@ -97,7 +104,6 @@
         margin: 15px auto;
         position: relative;
     }
-
     .image-tooltip {
         position: absolute;
         background: rgba(0, 0, 0, 0.5);
@@ -105,9 +111,21 @@
         padding: 10px;
         border-radius: 10px;
         display: none;
+        transform: translate(-50%, -50%);
+    }
+    /*.image-tooltip::after {*/
+        /*content: '';*/
+        /*position: absolute;*/
+        /*left: 50%;*/
+        /*transform: translateX(-50%);*/
+        /*top: -30px;*/
+        /*border: 10px solid transparent;*/
+        /*border-bottom: 20px solid rgba(0, 0, 0, 0.5);*/
+    /*}*/
+    .image-preview img:hover {
+        cursor: pointer;
     }
     .image-preview:hover .image-tooltip {
         display: block;
-        cursor: pointer;
     }
 </style>
