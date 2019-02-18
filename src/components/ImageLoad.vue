@@ -100,6 +100,7 @@
                 this.form.tooltipX = 0;
                 this.form.tooltipY = 0;
                 this.form.imgName = '';
+                this.$refs.file.value = '';
                 this.$emit('deleteSelectedImage');
             }
         },
